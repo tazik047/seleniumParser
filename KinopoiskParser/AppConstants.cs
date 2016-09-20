@@ -7,6 +7,7 @@ namespace KinopoiskParser
         private string _kinopoiskUrl;
         private string _kinoManiacUrl;
         private string _descriptionSection;
+        private string _youTubeUrl;
 
         public string KinopoiskUrl
         {
@@ -21,6 +22,11 @@ namespace KinopoiskParser
         public string DescriptionSection
         {
             get { return _descriptionSection ?? (_descriptionSection = ConfigurationManager.AppSettings["DescriptionSection"]); }
+        }
+
+        public string YouTubeUrl
+        {
+            get { return _youTubeUrl ?? (_youTubeUrl = ConfigurationManager.AppSettings["YouTubeUrl"]); }
         }
     }
 }
