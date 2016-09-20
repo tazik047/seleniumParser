@@ -122,10 +122,19 @@ namespace KinopoiskParser
 
         private string GetFieldValue(string name)
         {
-            var xpath = string.Format(".//*[text()='{0}']/..", name);
-            Actions action = new Actions(_chrome);
-            action.MoveToElement(_chrome.FindElement(By.XPath(xpath))).Perform();
-            return _chrome.FindElement(By.XPath(xpath)).Text.Split(new[] {name}, StringSplitOptions.RemoveEmptyEntries)[0].Trim();
+            try
+            {
+                var xpath = string.Format(".//*[text()='{0}']/..", name);
+                Actions action = new Actions(_chrome);
+                action.MoveToElement(_chrome.FindElement(By.XPath(xpath))).Perform();
+                return
+                    _chrome.FindElement(By.XPath(xpath)).Text.Split(new[] {name}, StringSplitOptions.RemoveEmptyEntries)
+                        [0].Trim();
+            }
+            catch (NoSuchElementException)
+            {
+                return "";
+            }
         }
 
         private void GoToUrl(string url)
