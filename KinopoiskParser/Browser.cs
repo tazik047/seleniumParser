@@ -24,9 +24,9 @@ namespace KinopoiskParser
         private int _searchTabId = 0;
         private int _kinomaniacTabId = 1;
 
-        public Browser()
+        public Browser(AppConstants appConstants)
         {
-            _appConstants = new AppConstants();
+            _appConstants = appConstants;
             _chrome = new ChromeDriver();
             _chrome.Manage().Window.Maximize();
         }

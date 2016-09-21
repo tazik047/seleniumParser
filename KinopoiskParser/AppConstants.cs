@@ -1,4 +1,8 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
+using System.IO;
+using System.Linq;
+using System.Text;
 
 namespace KinopoiskParser
 {
@@ -8,6 +12,7 @@ namespace KinopoiskParser
         private string _kinoManiacUrl;
         private string _descriptionSection;
         private string _youTubeUrl;
+        private string _userQueueFile = "userPreferences.txt";
 
         public string KinopoiskUrl
         {
@@ -27,6 +32,50 @@ namespace KinopoiskParser
         public string YouTubeUrl
         {
             get { return _youTubeUrl ?? (_youTubeUrl = ConfigurationManager.AppSettings["YouTubeUrl"]); }
+        }
+
+        public long CurrentPosition
+        {
+            get
+            {
+                var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                
+                return int.Parse(config.AppSettings.Settings["CurrentPosition"].Value);
+            }
+            set
+            {
+                var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+
+                config.AppSettings.Settings["CurrentPosition"].Value = value.ToString();
+                config.Save(ConfigurationSaveMode.Modified);
+                ConfigurationManager.RefreshSection("AppSettings");
+            }
+        }
+
+        public string QueueItem
+        {
+            get
+            {
+                if (!File.Exists(_userQueueFile))
+                {
+                    return null;
+                }
+                var items = File.ReadAllText(_userQueueFile)
+                    .Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
+                if (!items.Any())
+                {
+                    return null;
+                }
+
+                var first = items.First();
+                var res =
+                    items.Skip(1)
+                        .Aggregate(new StringBuilder(), (p, i) => p.Append(i).Append(Environment.NewLine))
+                        .ToString();
+                File.WriteAllText(_userQueueFile, res);
+
+                return first;
+            }
         }
     }
 }
