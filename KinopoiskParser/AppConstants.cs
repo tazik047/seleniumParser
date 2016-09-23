@@ -74,7 +74,7 @@ namespace KinopoiskParser
                         .ToString();
                 File.WriteAllText(_userQueueFile, res);
 
-                return first;
+                return first.Trim();
             }
         }
     }

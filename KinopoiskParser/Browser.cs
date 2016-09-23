@@ -35,7 +35,6 @@ namespace KinopoiskParser
         {
             var url = string.Format("{0}/#q={1} site:{2}", GoogleUrl, name, _appConstants.KinopoiskUrl);
             GoToUrl(url);
-            //var xpath = string.Format("(.//a[contains(@data-href,'{0}/film/')] | .//a[contains(@href, '{0}/film/')])/../..//cite", _appConstants.KinopoiskUrl);
             var xpath = By.XPath(".//a/../..//cite");
             _chrome.ElementIsVisible(xpath);
             var rawFilmLink = _chrome.FindElements(xpath).FirstOrDefault();
@@ -49,8 +48,19 @@ namespace KinopoiskParser
             GoToUrl(cleanFilmLink);
         }
 
+        public void FindFilmById(string id)
+        {
+            var url = string.Format("https://{0}/film/{1}", _appConstants.KinopoiskUrl, id);
+            GoToUrl(url);
+        }
+
         public Film GetOpenedFilm()
         {
+            if (_chrome.PageSource.Contains("404 - Страница не найдена"))
+            {
+                throw new FilmNotFoundException();
+            }
+
             var film = new Film
             {
                 KinopoiskId = Regex.Match(_chrome.Url, "\\/film\\/([^\\/]+)").Groups[1].Value,
@@ -145,6 +155,10 @@ namespace KinopoiskParser
         public void Dispose()
         {
             _chrome.Quit();
+        }
+
+        public void SaveFilm(Film film)
+        {
         }
     }
 

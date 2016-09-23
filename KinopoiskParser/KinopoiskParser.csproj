@@ -63,8 +63,11 @@
     <Compile Include="AppConstants.cs" />
     <Compile Include="Browser.cs" />
     <Compile Include="FilmNotFoundException.cs" />
+    <Compile Include="HistoryWorker.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueueWorker.cs" />
     <Compile Include="WaitExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -72,6 +75,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="history.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="userPreferences.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
