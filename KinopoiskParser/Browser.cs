@@ -147,7 +147,7 @@ namespace KinopoiskParser
             }
         }
 
-        private void GoToUrl(string url)
+        public void GoToUrl(string url)
         {
             _chrome.Navigate().GoToUrl(url);
         }
@@ -157,8 +157,19 @@ namespace KinopoiskParser
             _chrome.Quit();
         }
 
-        public void SaveFilm(Film film)
+        public void Click(By xPath)
         {
+            _chrome.FindElement(xPath).Click();
+        }
+
+        public void SetValue(By xPath, string value)
+        {
+            _chrome.FindElement(xPath).SendKeys(value);
+        }
+
+        public bool Contain(By xPath)
+        {
+            return _chrome.FindElements(xPath).Any();
         }
     }
 

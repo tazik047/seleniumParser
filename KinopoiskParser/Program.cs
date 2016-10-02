@@ -13,11 +13,13 @@ namespace KinopoiskParser
             var logger = new Logger();
             using (var br = new Browser(constants))
             {
-                var queueWorker = new QueueWorker(historyWorker, constants, br, logger);
+                var kinoManiac = new KinoManiac(constants, br);
+                kinoManiac.SaveFilm(new Film());
+                /*var queueWorker = new QueueWorker(historyWorker, constants, br, logger, kinoManiac);
                 while (true)
                 {
                     queueWorker.ProccessNextItem();
-                }
+                }*/
             }
         }
     }

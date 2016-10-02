@@ -8,13 +8,15 @@ namespace KinopoiskParser
         private readonly AppConstants _appConstants;
         private readonly Browser _browser;
         private readonly Logger _logger;
+        private readonly KinoManiac _kinoManiac;
 
-        public QueueWorker(HistoryWorker historyWorker, AppConstants appConstants, Browser browser, Logger logger)
+        public QueueWorker(HistoryWorker historyWorker, AppConstants appConstants, Browser browser, Logger logger, KinoManiac kinoManiac)
         {
             _historyWorker = historyWorker;
             _appConstants = appConstants;
             _browser = browser;
             _logger = logger;
+            _kinoManiac = kinoManiac;
         }
 
         public void ProccessNextItem()
@@ -44,7 +46,7 @@ namespace KinopoiskParser
                     return;
                 }
 
-                _browser.SaveFilm(film);
+                _kinoManiac.SaveFilm(film);
                 _historyWorker.AddToHistory(film.KinopoiskId);
             }
             catch (FilmNotFoundException)
