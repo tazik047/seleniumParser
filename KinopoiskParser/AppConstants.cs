@@ -77,5 +77,15 @@ namespace KinopoiskParser
                 return first.Trim();
             }
         }
+
+        public string Login
+        {
+            get { return ConfigurationManager.AppSettings["Login"]; }
+        }
+
+        public string Password
+        {
+            get { return ConfigurationManager.AppSettings["Password"]; }
+        }
     }
 }
