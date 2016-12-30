@@ -13,13 +13,15 @@ namespace KinopoiskParser
             var logger = new Logger();
             using (var br = new Browser(constants))
             {
-                var kinoManiac = new KinoManiac(constants, br);
-                kinoManiac.SaveFilm(new Film());
-                /*var queueWorker = new QueueWorker(historyWorker, constants, br, logger, kinoManiac);
-                while (true)
-                {
-                    queueWorker.ProccessNextItem();
-                }*/
+				br.FindFilm("Гарри поттер и узник азкабана");
+	            var film = br.GetOpenedFilm();
+	            var kinoManiac = new KinoManiac(constants, br);
+	            kinoManiac.SaveFilm(film);
+	            /*var queueWorker = new QueueWorker(historyWorker, constants, br, logger, kinoManiac);
+	            while (true)
+	            {
+	                queueWorker.ProccessNextItem();
+	            }*/
             }
         }
     }
