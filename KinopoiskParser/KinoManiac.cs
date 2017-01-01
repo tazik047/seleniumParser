@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using OpenQA.Selenium;
 
 namespace KinopoiskParser
@@ -20,11 +22,37 @@ namespace KinopoiskParser
 			_browser.GoToUrl(_appConstants.KinoManiacUrl);
 			Login();
 			_browser.SetValue(By.XPath(".//input[@id='title']"), film.Title);
-			foreach (var genre in film.Genres.Reverse())
+			_browser.SetValueWithEnter(By.XPath(".//*[@id='category_chzn']//input"), new [] { "Фильмы"}.Union(film.Genres).ToArray());
+			LoadImage(film.Poster);
+			SetDescription(film.Description);
+			_browser.SetValue(By.Id("xf_name"), film.FullName);
+			_browser.SetValueWithEnter(By.Id("xf_year-tokenfield"), film.PublishYear);
+			_browser.SetValueWithEnter(By.Id("xf_strana-tokenfield"), film.Countries);
+			_browser.SetValue(By.Id("xf_slogan"), film.Slogan);
+			_browser.SetValueWithEnter(By.Id("xf_reziser-tokenfield"), film.Producers);
+			_browser.SetValueWithEnter(By.Id("xf_akteri-tokenfield"), film.Actors);
+			_browser.SetValueWithEnter(By.Id("xf_zanr-tokenfield"), film.Genres);
+			_browser.SetValue(By.Id("xf_dlina"), film.Duration);
+			_browser.SetValue(By.Id("xf_quality"), film.Quality);
+			_browser.SetValue(By.Id("xf_youtube"), film.Trailer);
+			_browser.SetValue(By.Id("xf_youtube"), film.Trailer);
+			if (film.Is18Plus)
 			{
-				_browser.SetValueWithEnter(By.XPath(".//*[@id='category_chzn']//input"), genre);
+				_browser.SetValue(By.Id("xf_18"), "18+");
 			}
-			//LoadImage(film.Poster);
+			_browser.SetValue(By.Id("xf_kinopoisk_id"), film.KinopoiskId);
+
+			_browser.Click(By.Id("hdlightFindButton"));
+
+			_browser.WaitUntilIsntVisible(By.XPath(".//*[@id='hdlightFindResults']"));
+			_browser.Click(By.XPath(".//*[@id='hdlightFindResults']//button[text()='Вставить ссылку']"));
+			_browser.Click(By.XPath(".//*[@id='addnews']/div[@class='padded']//input[@type='submit']"));
+		}
+
+		private void SetDescription(string description)
+		{
+			_browser.Click(By.Id("idContentoEdit1"));
+			_browser.SetHtmlInFrame("idContentoEdit1", "document.getElementsByTagName('body')[0]", description);
 		}
 
 		private void LoadImage(string url)

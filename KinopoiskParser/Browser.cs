@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Web;
-using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
@@ -174,14 +169,42 @@ namespace KinopoiskParser
 			_chrome.FindElement(xPath).SendKeys(Keys.Return);
 		}
 
+		public void SetValueWithEnter(By xPath, params string[] values)
+		{
+			foreach (var value in values)
+			{
+				SetValueWithEnter(xPath, value);
+			}
+		}
+
 		public void SetValueInIframe(string frameId, By xPath, string url)
 		{
-			DoActionInFrame(By.Id(frameId), () => SetValue(xPath, url));
+			SetValueInIframe(By.Id(frameId), xPath, url);
+		}
+
+		public void SetValueInIframe(By frame, By xPath, string url)
+		{
+			DoActionInFrame(frame, () => SetValue(xPath, url));
+		}
+
+		public void SetHtml(string jsAccessor, string value)
+		{
+			_chrome.ExecuteScript(string.Format("{0}.innerHTML = '{1}'", jsAccessor, value));
+		}
+
+		public void SetHtmlInFrame(string frameId, string jsAccessor, string value)
+		{
+			DoActionInFrame(By.Id(frameId), () => SetHtml(jsAccessor, value));
 		}
 
 		public void ClickInFrame(string frameId, By xPath)
 		{
-			DoActionInFrame(By.Id(frameId), () => Click(xPath));
+			ClickInFrame(By.Id(frameId), xPath);
+		}
+
+		public void ClickInFrame(By frame, By xPath)
+		{
+			DoActionInFrame(frame, () => Click(xPath));
 		}
 
 		public bool Contain(By xPath)
@@ -204,6 +227,11 @@ namespace KinopoiskParser
 		public void WaitUntilHasntClassInFrame(string frameId, By id, string className)
 		{
 			DoActionInFrame(By.Id(frameId), () => WaitUntilHasntClass(id, className));
+		}
+
+		public void WaitUntilIsntVisible(By xPath)
+		{
+			WaitExtensions.Until(() => _chrome.FindElement(xPath).Displayed);
 		}
 	}
 
