@@ -8,7 +8,7 @@ using OpenQA.Selenium.Interactions;
 
 namespace KinopoiskParser
 {
-	class Browser : IDisposable
+	public class Browser : IDisposable
 	{
 		private static string GoogleUrl
 		{
@@ -26,6 +26,7 @@ namespace KinopoiskParser
 
 		public void FindFilm(string name)
 		{
+			name = Uri.EscapeDataString(name);
 			var url = string.Format("{0}/#q={1} site:{2}", GoogleUrl, name, _appConstants.KinopoiskUrl);
 			GoToUrl(url);
 			var xpath = By.XPath(".//div[@role='main']//a/../..//cite");
@@ -47,7 +48,7 @@ namespace KinopoiskParser
 			GoToUrl(url);
 		}
 
-		public Film GetOpenedFilm()
+		public Film GetOpenedFilm(bool getTrailer = true)
 		{
 			if (_chrome.PageSource.Contains("404 - Страница не найдена"))
 			{
@@ -69,7 +70,10 @@ namespace KinopoiskParser
 				Is18Plus = GetFieldValue("возраст").Contains("18")
 			};
 			ParsePosterAndFullName(film);
-			GetTrailer(film);
+			if (getTrailer)
+			{
+				GetTrailer(film);
+			}
 			/*var json = Newtonsoft.Json.JsonConvert.SerializeObject(film, Formatting.Indented).Replace("\r\n", "<br/>");
             _chrome.ExecuteScript("document.getElementsByTagName('body')[0].innerHTML = '<div style=\"max - width: 100 %;margin: 40px;background: white;\">" + json + "</div>'");
             Thread.Sleep(10000);*/
