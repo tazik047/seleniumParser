@@ -6,86 +6,92 @@ using System.Text;
 
 namespace KinopoiskParser
 {
-    public class AppConstants
-    {
-        private string _kinopoiskUrl;
-        private string _kinoManiacUrl;
-        private string _descriptionSection;
-        private string _youTubeUrl;
-        private string _userQueueFile = "userPreferences.txt";
+	public class AppConstants
+	{
+		private string _kinopoiskUrl;
+		private string _kinoManiacUrl;
+		private string _descriptionSection;
+		private string _youTubeUrl;
+		private string _userQueueFile = "userPreferences.txt";
+		private string _metaTitleFormat;
 
-        public string KinopoiskUrl
-        {
-            get { return _kinopoiskUrl ?? (_kinopoiskUrl = ConfigurationManager.AppSettings["KinopoiskUrl"]); }
-        }
+		public string KinopoiskUrl
+		{
+			get { return _kinopoiskUrl ?? (_kinopoiskUrl = ConfigurationManager.AppSettings["KinopoiskUrl"]); }
+		}
 
-        public string KinoManiacUrl
-        {
-            get { return _kinoManiacUrl ?? (_kinoManiacUrl = ConfigurationManager.AppSettings["KinoManiacUrl"]); }
-        }
+		public string KinoManiacUrl
+		{
+			get { return _kinoManiacUrl ?? (_kinoManiacUrl = ConfigurationManager.AppSettings["KinoManiacUrl"]); }
+		}
 
-        public string DescriptionSection
-        {
-            get { return _descriptionSection ?? (_descriptionSection = ConfigurationManager.AppSettings["DescriptionSection"]); }
-        }
+		public string DescriptionSection
+		{
+			get { return _descriptionSection ?? (_descriptionSection = ConfigurationManager.AppSettings["DescriptionSection"]); }
+		}
 
-        public string YouTubeUrl
-        {
-            get { return _youTubeUrl ?? (_youTubeUrl = ConfigurationManager.AppSettings["YouTubeUrl"]); }
-        }
+		public string MetaTitleFormat
+		{
+			get { return _metaTitleFormat ?? (_metaTitleFormat = ConfigurationManager.AppSettings["MetaTitleFormat"]); }
+		}
 
-        public long CurrentPosition
-        {
-            get
-            {
-                var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-                
-                return int.Parse(config.AppSettings.Settings["CurrentPosition"].Value);
-            }
-            set
-            {
-                var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+		public string YouTubeUrl
+		{
+			get { return _youTubeUrl ?? (_youTubeUrl = ConfigurationManager.AppSettings["YouTubeUrl"]); }
+		}
 
-                config.AppSettings.Settings["CurrentPosition"].Value = value.ToString();
-                config.Save(ConfigurationSaveMode.Modified);
-                ConfigurationManager.RefreshSection("AppSettings");
-            }
-        }
+		public long CurrentPosition
+		{
+			get
+			{
+				var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
-        public string QueueItem
-        {
-            get
-            {
-                if (!File.Exists(_userQueueFile))
-                {
-                    return null;
-                }
-                var items = File.ReadAllText(_userQueueFile)
-                    .Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
-                if (!items.Any())
-                {
-                    return null;
-                }
+				return int.Parse(config.AppSettings.Settings["CurrentPosition"].Value);
+			}
+			set
+			{
+				var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
-                var first = items.First();
-                var res =
-                    items.Skip(1)
-                        .Aggregate(new StringBuilder(), (p, i) => p.Append(i).Append(Environment.NewLine))
-                        .ToString();
-                File.WriteAllText(_userQueueFile, res);
+				config.AppSettings.Settings["CurrentPosition"].Value = value.ToString();
+				config.Save(ConfigurationSaveMode.Modified);
+				ConfigurationManager.RefreshSection("AppSettings");
+			}
+		}
 
-                return first.Trim();
-            }
-        }
+		public string QueueItem
+		{
+			get
+			{
+				if (!File.Exists(_userQueueFile))
+				{
+					return null;
+				}
+				var items = File.ReadAllText(_userQueueFile)
+					.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+				if (!items.Any())
+				{
+					return null;
+				}
 
-        public string Login
-        {
-            get { return ConfigurationManager.AppSettings["Login"]; }
-        }
+				var first = items.First();
+				var res =
+					items.Skip(1)
+						.Aggregate(new StringBuilder(), (p, i) => p.Append(i).Append(Environment.NewLine))
+						.ToString();
+				File.WriteAllText(_userQueueFile, res);
 
-        public string Password
-        {
-            get { return ConfigurationManager.AppSettings["Password"]; }
-        }
-    }
+				return first.Trim();
+			}
+		}
+
+		public string Login
+		{
+			get { return ConfigurationManager.AppSettings["Login"]; }
+		}
+
+		public string Password
+		{
+			get { return ConfigurationManager.AppSettings["Password"]; }
+		}
+	}
 }

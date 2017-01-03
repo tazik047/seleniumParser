@@ -46,6 +46,12 @@ namespace KinopoiskParser
 
 			_browser.WaitUntilIsntVisible(By.XPath(".//*[@id='hdlightFindResults']"));
 			_browser.Click(By.XPath(".//*[@id='hdlightFindResults']//button[text()='Вставить ссылку']"));
+
+			var additionalTab = By.XPath(".//div[@class='box-header']//ul[contains(@class,'nav')]/li[3]");
+			_browser.Click(additionalTab);
+			_browser.WaitUntilHasntClass(additionalTab, "active");
+			_browser.SetValue(By.XPath(".//input[@name='meta_title']"), string.Format(_appConstants.MetaTitleFormat, film.Title, film.PublishYear));
+
 			_browser.Click(By.XPath(".//*[@id='addnews']/div[@class='padded']//input[@type='submit']"));
 		}
 
