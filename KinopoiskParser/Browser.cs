@@ -16,8 +16,6 @@ namespace KinopoiskParser
 		}
 		private readonly ChromeDriver _chrome;
 		private readonly AppConstants _appConstants;
-		private int _searchTabId = 0;
-		private int _kinomaniacTabId = 1;
 
 		public Browser(AppConstants appConstants)
 		{
@@ -30,7 +28,7 @@ namespace KinopoiskParser
 		{
 			var url = string.Format("{0}/#q={1} site:{2}", GoogleUrl, name, _appConstants.KinopoiskUrl);
 			GoToUrl(url);
-			var xpath = By.XPath(".//a/../..//cite");
+			var xpath = By.XPath(".//div[@role='main']//a/../..//cite");
 			_chrome.ElementIsVisible(xpath);
 			var rawFilmLink = _chrome.FindElements(xpath).FirstOrDefault();
 			if (rawFilmLink == null)

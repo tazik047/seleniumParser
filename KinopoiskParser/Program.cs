@@ -13,7 +13,7 @@ namespace KinopoiskParser
             var logger = new Logger();
             using (var br = new Browser(constants))
             {
-				br.FindFilm("Гарри поттер и узник азкабана");
+				br.FindFilm("Страшная воля богов");
 	            var film = br.GetOpenedFilm();
 	            var kinoManiac = new KinoManiac(constants, br);
 	            kinoManiac.SaveFilm(film);

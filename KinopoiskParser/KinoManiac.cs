@@ -35,7 +35,6 @@ namespace KinopoiskParser
 			_browser.SetValue(By.Id("xf_dlina"), film.Duration);
 			_browser.SetValue(By.Id("xf_quality"), film.Quality);
 			_browser.SetValue(By.Id("xf_youtube"), film.Trailer);
-			_browser.SetValue(By.Id("xf_youtube"), film.Trailer);
 			if (film.Is18Plus)
 			{
 				_browser.SetValue(By.Id("xf_18"), "18+");

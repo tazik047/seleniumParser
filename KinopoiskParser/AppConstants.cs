@@ -46,7 +46,7 @@ namespace KinopoiskParser
 			{
 				var config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
 
-				return int.Parse(config.AppSettings.Settings["CurrentPosition"].Value);
+				return long.Parse(config.AppSettings.Settings["CurrentPosition"].Value);
 			}
 			set
 			{
