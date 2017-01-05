@@ -30,7 +30,7 @@ namespace HelpParseApplication
 				string kinopoiskId = null;
 				if (line.Contains("kinopoisk_id|"))
 				{
-					var t = line.Split(new[] {"kinopoisk_id|"}, StringSplitOptions.RemoveEmptyEntries);
+					var t = line.Split(new[] { "kinopoisk_id|" }, StringSplitOptions.RemoveEmptyEntries);
 					if (t.Length > 2)
 					{
 						var a = 10;
@@ -40,52 +40,42 @@ namespace HelpParseApplication
 				dataGridView1.Rows.Add(film, kinopoiskId);
 			}
 
-			Task.Run(()=>LoadIds());
+			Task.Run(() => LoadIds());
 		}
 
 		private void LoadIds()
 		{
-			try
+			var constants = new AppConstants();
+			using (var br = new Browser(constants))
 			{
-				var constants = new AppConstants();
-				using (var br = new Browser(constants))
+				foreach (DataGridViewRow dataGridViewRow in dataGridView1.Rows)
 				{
-					foreach (DataGridViewRow dataGridViewRow in dataGridView1.Rows)
+					if (dataGridViewRow.Cells[1].Value.IsNullOrEmpty())
 					{
-						if (dataGridViewRow.Cells[1].Value.IsNullOrEmpty())
+						var name = dataGridViewRow.Cells[0].Value.ToString();
+						if (IsInCache(name))
 						{
-							var name = dataGridViewRow.Cells[0].Value.ToString();
-							if (IsInCache(name))
-							{
-								dataGridViewRow.Cells[2].Value = GetFromCache(name);
-							}
-							else
-							{
-								br.FindFilm(name);
-								var film = br.GetOpenedFilm(false);
-								dataGridViewRow.Cells[2].Value = film.KinopoiskId;
-							}
+							dataGridViewRow.Cells[2].Value = GetFromCache(name);
 						}
 						else
 						{
-							dataGridViewRow.Cells[2].Value = dataGridViewRow.Cells[1].Value;
+							br.FindFilm(name);
+							var film = br.GetOpenedFilm(false);
+							dataGridViewRow.Cells[2].Value = film.KinopoiskId;
 						}
 					}
-
+					else
+					{
+						dataGridViewRow.Cells[2].Value = dataGridViewRow.Cells[1].Value;
+					}
 				}
-			}
-			catch (Exception e)
-			{
-				Invoke((Action)(() =>
-				{
-					MessageBox.Show(e.Message);
-				}));
+
 			}
 		}
 
 		private bool IsInCache(string name)
 		{
-			var t = _cache.SingleOrDefault(p => Regex.Match(p, @"(.+)\s(\d+)$").Groups[1].Value.Trim()==name);
+			var t = _cache.SingleOrDefault(p => Regex.Match(p, @"(.+)\s(\d+)$").Groups[1].Value.Trim() == name);
 			return t != null;
 		}
 
@@ -106,7 +96,7 @@ namespace HelpParseApplication
 			"Тор (Thor)		258941",
 			"Железный человек (Iron Man)		61237",
 			"Женщина-кошка (Catwoman)		3523",
-			"Дневник Бриджет Джонс (Bridget Jones\\\'s Diary)		621",
+			@"Дневник Бриджет Джонс (Bridget Jones\\\'s Diary)		621",
 			"Клятва  (The Vow)		506296",
 			"Мстители (The Avengers)		263531",
 			"Держи ритм (Take the Lead)		102147",
@@ -124,8 +114,8 @@ namespace HelpParseApplication
 			"Евротур (EuroTrip)		5090",
 			"Подземелье драконов (Dungeons & Dragons)		11109",
 			"Dungeons & Dragons: Wrath of the Dragon God		81698",
-			"Dungeons & Dragons: The Book of Vile Darkness     568351",
-			"Мисс Конгениальность (Miss Congeniality)      755",
+			"Dungeons & Dragons: The Book of Vile Darkness		568351",
+			"Мисс Конгениальность (Miss Congeniality)		755",
 			"Miss Congeniality 2: Armed & Fabulous		71341",
 			"Сверхъестественное 6 сезон (Supernatural)		178707",
 			"Железный человек 3 (Iron Man Three)		462762",
@@ -133,7 +123,7 @@ namespace HelpParseApplication
 			"Служебный роман		43869",
 			"Служебный роман. Наше время		468193",
 			"Остров		81291",
-			"One Flew Over the Cuckoo\\\'s Nest		336",
+			@"One Flew Over the Cuckoo\\\'s Nest		336",
 			"Город бога (City of God)		439",
 			"300 спартанцев		81924",
 			"9 рота		84674",
@@ -169,7 +159,7 @@ namespace HelpParseApplication
 			"Скуби-Ду 2: Монстры на свободе (Scooby Doo 2: Monsters Unleashed)		6186",
 			"Скуби-Ду 3- Тайна начинается (Scooby-Doo! The Mystery Begins)		419046",
 			"Нежность (La dеlicatesse)		582764",
-			"Амели (Le Fabuleux destin d\\\'Am?lie Poulain)		341",
+			@"Амели (Le Fabuleux destin d\\\'Am?lie Poulain)		341",
 			"Дорогой Джон (Dear John)		415687",
 			"Каникулы строгого режима		417840",
 			"Легенда №17		601564",
@@ -178,6 +168,26 @@ namespace HelpParseApplication
 			"Письма к Джульетте (Letters to Juliet)		461799",
 			"Синдбад: Легенда семи морей (Sinbad: Legend of the Seven Seas)		7971",
 			"Мачете убивает (Machete Kills)		601022",
+			"Мачете (Machete)		467553",
+			"Великий Гэтсби (The Great Gatsby)		463724",
+			"Бэтмен: Начало (Batman Begins)		47237",
+			"Темный рыцарь: Возрождение легенды (The Dark Knight Rises)		437410",
+			"Темный рыцарь (The Dark Knight)		111543",
+			"Милый друг (Bel Ami)		466849",
+			"Тайный знак (An Invisible Sign)		410566",
+			"Несносный дед (Jackass Presents: Bad Grandpa)		780451",
+			"Начало (Inception)		447301",
+			"Тепло наших тел (Warm Bodies)		497077",
+			"Сверхъестественное 1 сезон (Supernatural)		178707",
+			"Сверхъестественное 2 сезон (Supernatural)		178707",
+			"Восьмидесятые (1-й сезон)		592383",
+			"Сверхъестественное 3 сезон (Supernatural)		178707",
+			"Сверхъестественное 4 сезон (Supernatural)		178707",
+			"Сверхъестественное 5 сезон (Supernatural)		178707",
+			"Гриффины (1 сезон)		161101",
+			"Гриффины (2 сезон)		161101",
+			"Гриффины (3 сезон)		161101",
+			"Гриффины (4 сезон)		161101",
 
 		};
 	}

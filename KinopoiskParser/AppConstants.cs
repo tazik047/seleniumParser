@@ -14,6 +14,20 @@ namespace KinopoiskParser
 		private string _youTubeUrl;
 		private string _userQueueFile = "userPreferences.txt";
 		private string _metaTitleFormat;
+		private int? _waitTimeout;
+
+		public int WaitTimeout
+		{
+			get
+			{
+				if (_waitTimeout == null)
+				{
+					_waitTimeout = Convert.ToInt32(ConfigurationManager.AppSettings["WaitTimeout"]);
+				}
+
+				return _waitTimeout.Value * 1000;
+			}
+		}
 
 		public string KinopoiskUrl
 		{

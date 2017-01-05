@@ -27,11 +27,11 @@ namespace KinopoiskParser
 		public void FindFilm(string name)
 		{
 			name = Uri.EscapeDataString(name);
-			var url = string.Format("{0}/#q={1} site:{2}", GoogleUrl, name, _appConstants.KinopoiskUrl);
+			var url = string.Format("{0}/#q={1} site:{2}/film", GoogleUrl, name, _appConstants.KinopoiskUrl);
 			GoToUrl(url);
 			var xpath = By.XPath(".//div[@role='main']//a/../..//cite");
 			_chrome.ElementIsVisible(xpath);
-			var rawFilmLink = _chrome.FindElements(xpath).FirstOrDefault();
+			var rawFilmLink = _chrome.FindElements(xpath).FirstOrDefault(p=>!p.Text.Contains("video"));
 			if (rawFilmLink == null)
 			{
 				throw new FilmNotFoundException();
