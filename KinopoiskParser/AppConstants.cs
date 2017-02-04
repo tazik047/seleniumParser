@@ -15,6 +15,7 @@ namespace KinopoiskParser
 		private string _userQueueFile = "userPreferences.txt";
 		private string _metaTitleFormat;
 		private int? _waitTimeout;
+		private string _kinopoiskSearchGoogle;
 
 		public int WaitTimeout
 		{
@@ -32,6 +33,11 @@ namespace KinopoiskParser
 		public string KinopoiskUrl
 		{
 			get { return _kinopoiskUrl ?? (_kinopoiskUrl = ConfigurationManager.AppSettings["KinopoiskUrl"]); }
+		}
+
+		public string KinopoiskSearchGoogle
+		{
+			get { return _kinopoiskSearchGoogle ?? ( _kinopoiskSearchGoogle = ConfigurationManager.AppSettings["KinopoiskSearchGoogle"]); }
 		}
 
 		public string KinoManiacUrl
@@ -72,6 +78,25 @@ namespace KinopoiskParser
 			}
 		}
 
+		public string SeeQueueItem
+		{
+			get
+			{
+				if (!File.Exists(_userQueueFile))
+				{
+					return null;
+				}
+				var items = File.ReadAllText(_userQueueFile, Encoding.UTF8)
+					.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+				if (!items.Any())
+				{
+					return null;
+				}
+
+				return items.First();
+			}
+		}
+
 		public string QueueItem
 		{
 			get
@@ -80,7 +105,7 @@ namespace KinopoiskParser
 				{
 					return null;
 				}
-				var items = File.ReadAllText(_userQueueFile)
+				var items = File.ReadAllText(_userQueueFile, Encoding.UTF8)
 					.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 				if (!items.Any())
 				{
@@ -92,7 +117,7 @@ namespace KinopoiskParser
 					items.Skip(1)
 						.Aggregate(new StringBuilder(), (p, i) => p.Append(i).Append(Environment.NewLine))
 						.ToString();
-				File.WriteAllText(_userQueueFile, res);
+				File.WriteAllText(_userQueueFile, res, Encoding.UTF8);
 
 				return first.Trim();
 			}
@@ -106,6 +131,11 @@ namespace KinopoiskParser
 		public string Password
 		{
 			get { return ConfigurationManager.AppSettings["Password"]; }
+		}
+
+		public int LimitCount
+		{
+			get { return int.Parse(ConfigurationManager.AppSettings["LimitCount"]); }
 		}
 	}
 }

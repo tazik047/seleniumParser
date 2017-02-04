@@ -22,7 +22,7 @@ namespace KinopoiskParser
 
 		public void ProccessNextItem()
 		{
-			var preference = _appConstants.QueueItem;
+			var preference = _appConstants.SeeQueueItem;
 			if (string.IsNullOrEmpty(preference))
 			{
 				preference = _appConstants.CurrentPosition.ToString();
@@ -32,6 +32,7 @@ namespace KinopoiskParser
 			else
 			{
 				WorkWithFilm(_browser.FindFilm, preference);
+				preference = _appConstants.QueueItem;
 			}
 			Thread.Sleep(_appConstants.WaitTimeout);
 		}
@@ -57,6 +58,7 @@ namespace KinopoiskParser
 			catch (Exception e)
 			{
 				Console.WriteLine(e.Message);
+				Console.WriteLine(e.StackTrace);
 				Console.WriteLine("Попробовать еще раз?(y/n)");
 				var t = Console.ReadLine().ToLower();
 				if (t == "y")

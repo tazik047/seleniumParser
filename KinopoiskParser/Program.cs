@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace KinopoiskParser
 {
 	class Program
@@ -10,14 +12,20 @@ namespace KinopoiskParser
 			var logger = new Logger();
 			using (var br = new Browser(constants))
 			{
-				//br.FindFilm("Страшная воля богов");
-				//var film = br.GetOpenedFilm();
+				var count = 0;
 				var kinoManiac = new KinoManiac(constants, br);
-				//kinoManiac.SaveFilm(film);
+				
 				var queueWorker = new QueueWorker(historyWorker, constants, br, logger, kinoManiac);
 				while (true)
 				{
+					count++;
 					queueWorker.ProccessNextItem();
+					if (constants.LimitCount != 0 && count == constants.LimitCount)
+					{
+						Console.WriteLine("Все, план на сегодня выполнен!");
+						Console.ReadLine();
+						break;
+					}
 				}
 			}
 		}

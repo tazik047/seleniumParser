@@ -5,6 +5,7 @@ using System.Web;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Support.Extensions;
 
 namespace KinopoiskParser
 {
@@ -14,24 +15,32 @@ namespace KinopoiskParser
 		{
 			get { return "https://www.google.com.ua"; }
 		}
+
 		private readonly ChromeDriver _chrome;
 		private readonly AppConstants _appConstants;
 
 		public Browser(AppConstants appConstants)
 		{
 			_appConstants = appConstants;
-			_chrome = new ChromeDriver();
+			var option = new ChromeOptions();
+			option.AddArgument(string.Format("load-extension={0}\\AdBlock", AppDomain.CurrentDomain.BaseDirectory));
+			_chrome = new ChromeDriver(option);
 			_chrome.Manage().Window.Maximize();
+			var newTabInstance = _chrome.WindowHandles[_chrome.WindowHandles.Count - 1];
+			// switch our WebDriver to the new tab's window handle
+			_chrome.SwitchTo().Window(newTabInstance);
+			var t = _chrome.ExecuteJavaScript<object>("window.close();", null);
+			_chrome.SwitchTo().Window(_chrome.WindowHandles[0]);
 		}
 
 		public void FindFilm(string name)
 		{
 			name = Uri.EscapeDataString(name);
-			var url = string.Format("{0}/#q={1} site:{2}/film", GoogleUrl, name, _appConstants.KinopoiskUrl);
+			var url = string.Format("{1}/#q=" + _appConstants.KinopoiskSearchGoogle, name, GoogleUrl);
 			GoToUrl(url);
 			var xpath = By.XPath(".//div[@role='main']//a/../..//cite");
 			_chrome.ElementIsVisible(xpath);
-			var rawFilmLink = _chrome.FindElements(xpath).FirstOrDefault(p=>!p.Text.Contains("video"));
+			var rawFilmLink = _chrome.FindElements(xpath).FirstOrDefault(p => !p.Text.Contains("video"));
 			if (rawFilmLink == null)
 			{
 				throw new FilmNotFoundException();
@@ -65,51 +74,107 @@ namespace KinopoiskParser
 				Countries = GetFieldValues("страна"),
 				Producers = GetFieldValues("режиссер"),
 				Actors = GetActors(),
-				Description = GetDescription(),
 				Duration = new string(GetFieldValue("время").TakeWhile(p => p != '.').ToArray()) + ".",
 				Is18Plus = GetFieldValue("возраст").Contains("18")
 			};
+
 			ParsePosterAndFullName(film);
+			GetDescription(film);
+			GetFilmType(film);
+
 			if (getTrailer)
 			{
 				GetTrailer(film);
 			}
+
 			/*var json = Newtonsoft.Json.JsonConvert.SerializeObject(film, Formatting.Indented).Replace("\r\n", "<br/>");
             _chrome.ExecuteScript("document.getElementsByTagName('body')[0].innerHTML = '<div style=\"max - width: 100 %;margin: 40px;background: white;\">" + json + "</div>'");
             Thread.Sleep(10000);*/
 			return film;
 		}
 
-		private void GetTrailer(Film film)
+		private void GetFilmType(Film film)
 		{
-			var url = string.Format("https://www.{1}/results?search_query={0} руссикй трейлер", film.Title, _appConstants.YouTubeUrl);
-			GoToUrl(url);
-			var xpath = By.XPath(".//a[contains(@href,'watch')]");
-			_chrome.ElementIsVisible(xpath);
-			film.Trailer = _chrome.FindElements(xpath).First().GetAttribute("href");
-			Uri myUri = new Uri(film.Trailer);
-			film.Trailer = HttpUtility.ParseQueryString(myUri.Query).Get("v");
+			try
+			{
+				var element = _chrome.FindElementByXPath(".//*[text()=\"Рейтинг фильма\"]");
+				film.FilmType = FilmType.Film;
+			}
+			catch (NoSuchElementException)
+			{
+				try
+				{
+					var element = _chrome.FindElementByXPath(".//*[text()=\"Рейтинг сериала\"]");
+					film.FilmType = FilmType.Serial;
+				}
+				catch (NoSuchElementException)
+				{
+					try
+					{
+						var element = _chrome.FindElementByXPath(".//*[text()=\"Рейтинг мультсериала\"]");
+						film.FilmType = FilmType.Anime;
+					}
+					catch (NoSuchElementException)
+					{
+						film.FilmType = FilmType.Other;
+					}
+				}
+			}
 		}
 
-		private string GetDescription()
+		private void GetTrailer(Film film)
 		{
-			return _chrome.FindElement(By.XPath(_appConstants.DescriptionSection)).GetAttribute("innerHTML");
+			try
+			{
+				var url = string.Format("https://www.{1}/results?search_query={0} русский трейлер", film.Title,
+					_appConstants.YouTubeUrl);
+				GoToUrl(url);
+				var xpath = By.XPath(".//a[contains(@href,'watch')]");
+				_chrome.ElementIsVisible(xpath, TimeSpan.FromMinutes(1));
+				film.Trailer = _chrome.FindElements(xpath).First().GetAttribute("href");
+				Uri myUri = new Uri(film.Trailer);
+				film.Trailer = HttpUtility.ParseQueryString(myUri.Query).Get("v");
+			}
+			catch (WebDriverTimeoutException)
+			{
+				Console.WriteLine("Trailer for film {0} not found.", film.FullName);
+				film.Trailer = string.Empty;
+			}
+		}
+
+		private void GetDescription(Film film)
+		{
+			try
+			{
+				film.Description = _chrome.FindElement(By.XPath(_appConstants.DescriptionSection)).GetAttribute("innerHTML");
+				return;
+			}
+			catch (NoSuchElementException e)
+			{
+				Console.WriteLine("{0}: {1}", film.FullName, e.Message);
+			}
+
+			film.Description = string.Empty;
 		}
 
 		private string[] GetActors()
 		{
-			var items = _chrome.FindElements(By.XPath(".//*[contains(text(),'В главных ролях')]/following-sibling::*[1]//*[contains(@itemprop, 'actors')]"));
+			var items =
+				_chrome.FindElements(
+					By.XPath(".//*[contains(text(),'В главных ролях')]/following-sibling::*[1]//*[contains(@itemprop, 'actors')]"));
 			return items
-					.Select(p => p.Text.Trim())
-					.Where(p => p != "...")
-					.ToArray();
+				.Select(p => p.Text.Trim())
+				.Where(p => p != "...")
+				.ToArray();
 		}
 
 		private void ParsePosterAndFullName(Film film)
 		{
 			var xpathFullName = string.Format(".//img[contains(@alt,'{0}')]", film.Title.Split().First());
 
-			film.Poster = _chrome.FindElement(By.XPath(xpathFullName)).GetAttribute("src").Replace("film_iphone/iphone360_", "film_big/");
+			film.Poster = _chrome.FindElement(By.XPath(xpathFullName))
+				.GetAttribute("src")
+				.Replace("film_iphone/iphone360_", "film_big/");
 			film.FullName = _chrome.FindElement(By.XPath(xpathFullName)).GetAttribute("alt");
 			var name = _chrome.FindElements(By.XPath(".//*[@itemprop='name']")).FirstOrDefault();
 			if (name != null)
@@ -162,6 +227,16 @@ namespace KinopoiskParser
 		public void SetValue(By xPath, string value)
 		{
 			_chrome.FindElement(xPath).SendKeys(value);
+		}
+
+		public void Clear(By xPath)
+		{
+			_chrome.FindElement(xPath).Clear();
+		}
+
+		public string GetValue(By xPath)
+		{
+			return _chrome.FindElement(xPath).GetAttribute("value");
 		}
 
 		public void SetValueWithEnter(By xPath, string value)
@@ -235,43 +310,5 @@ namespace KinopoiskParser
 		{
 			WaitExtensions.Until(() => _chrome.FindElement(xPath).Displayed);
 		}
-	}
-
-	public class Film
-	{
-		public Film()
-		{
-			Quality = "HD";
-		}
-
-		public string KinopoiskId { get; set; }
-
-		public string Title { get; set; }
-
-		public string FullName { get; set; }
-
-		public string Poster { get; set; }
-
-		public string Trailer { get; set; }
-
-		public string Slogan { get; set; }
-
-		public string PublishYear { get; set; }
-
-		public string[] Genres { get; set; }
-
-		public string[] Countries { get; set; }
-
-		public string[] Producers { get; set; }
-
-		public string[] Actors { get; set; }
-
-		public string Description { get; set; }
-
-		public string Quality { get; set; }
-
-		public string Duration { get; set; }
-
-		public bool Is18Plus { get; set; }
 	}
 }

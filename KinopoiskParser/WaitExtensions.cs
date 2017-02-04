@@ -10,7 +10,7 @@ namespace KinopoiskParser
     {
         private static TimeSpan TimeoutDefault
         {
-            get { return TimeSpan.FromMinutes(3); }
+            get { return TimeSpan.FromMinutes(1); }
         }
 
         private static WebDriverWait For(IWebDriver driver, TimeSpan timeout)
