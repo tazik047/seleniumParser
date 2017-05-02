@@ -53,6 +53,10 @@ namespace KinopoiskParser
 			{
 				Console.WriteLine("HD Light film not found for film {0}", film.FullName);
 			}
+			catch (NoSuchElementException)
+			{
+				Console.WriteLine("HD Light film not found for film {0}", film.FullName);
+			}
 
 			var additionalTab = By.XPath(".//div[@class='box-header']//ul[contains(@class,'nav')]/li[3]");
 			_browser.Click(additionalTab);

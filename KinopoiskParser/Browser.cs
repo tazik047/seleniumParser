@@ -26,11 +26,14 @@ namespace KinopoiskParser
 			option.AddArgument(string.Format("load-extension={0}\\AdBlock", AppDomain.CurrentDomain.BaseDirectory));
 			_chrome = new ChromeDriver(option);
 			_chrome.Manage().Window.Maximize();
-			var newTabInstance = _chrome.WindowHandles[_chrome.WindowHandles.Count - 1];
-			// switch our WebDriver to the new tab's window handle
-			_chrome.SwitchTo().Window(newTabInstance);
-			var t = _chrome.ExecuteJavaScript<object>("window.close();", null);
-			_chrome.SwitchTo().Window(_chrome.WindowHandles[0]);
+			if (_chrome.WindowHandles.Count > 1)
+			{
+				var newTabInstance = _chrome.WindowHandles[_chrome.WindowHandles.Count - 1];
+				// switch our WebDriver to the new tab's window handle
+				_chrome.SwitchTo().Window(newTabInstance);
+				var t = _chrome.ExecuteJavaScript<object>("window.close();", null);
+				_chrome.SwitchTo().Window(_chrome.WindowHandles[0]);
+			}
 		}
 
 		public void FindFilm(string name)
@@ -46,8 +49,11 @@ namespace KinopoiskParser
 				throw new FilmNotFoundException();
 			}
 
-			var cleanFilmLink = Regex.Match(rawFilmLink.Text, "^[^w]+" + _appConstants.KinopoiskUrl + "\\/film\\/[^\\/]+").Value;
-
+			var cleanFilmLink = Regex.Match(rawFilmLink.Text, "^[^w]*" + _appConstants.KinopoiskUrl + "\\/film\\/[^\\/]+").Value;
+			if (!cleanFilmLink.StartsWith("https://"))
+			{
+				cleanFilmLink = "https://" + cleanFilmLink;
+			}
 			GoToUrl(cleanFilmLink);
 		}
 
@@ -59,9 +65,15 @@ namespace KinopoiskParser
 
 		public Film GetOpenedFilm(bool getTrailer = true)
 		{
-			if (_chrome.PageSource.Contains("404 - Страница не найдена"))
+			try
 			{
-				throw new FilmNotFoundException();
+				if (_chrome.PageSource.Contains("404 - Страница не найдена"))
+				{
+					throw new FilmNotFoundException();
+				}
+			}
+			catch (WebDriverException e)
+			{
 			}
 
 			var film = new Film
